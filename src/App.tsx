@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Book, Users, Lightbulb, ChatCircle, Chalkboard, GraduationCap, Certificate, Envelope } from '@phosphor-icons/react'
+import { Book, Users, Lightbulb, ChatCircle, Chalkboard, GraduationCap, Certificate, Envelope, List, X } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { toast } from 'sonner'
 import logoImage from '@/assets/images/logo.png'
 import instructorImage from '@/assets/images/instructor.jpg'
@@ -139,6 +140,7 @@ const faqs: FAQ[] = [
 
 function App() {
   const [isContactOpen, setIsContactOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [expandedWorkshop, setExpandedWorkshop] = useState<number | null>(null)
   const [formData, setFormData] = useState({
     name: '',
@@ -150,7 +152,25 @@ function App() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    toast.success('Thank you for your interest! I will be in touch soon.')
+    
+    const emailSubject = formData.workshop 
+      ? `Workshop Inquiry: ${formData.workshop}`
+      : 'Workshop Inquiry'
+    
+    const emailBody = `Name: ${formData.name}
+Email: ${formData.email}
+Organization: ${formData.organization || 'Not provided'}
+Workshop of Interest: ${formData.workshop || 'Not specified'}
+
+Message:
+${formData.message || 'No additional message provided'}
+`
+    
+    const mailtoLink = `mailto:beatrice@favreelc.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`
+    
+    window.location.href = mailtoLink
+    
+    toast.success('Opening your email client... Please send the message to complete your inquiry.')
     setIsContactOpen(false)
     setFormData({ name: '', email: '', organization: '', workshop: '', message: '' })
   }
@@ -161,15 +181,15 @@ function App() {
         <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img src={logoImage} alt="Favre Early Learning Consulting" className="h-24 w-auto" />
+              <img src={logoImage} alt="Favre Early Learning Consulting" className="h-16 sm:h-20 md:h-24 w-auto" />
             </div>
             <div className="hidden md:flex items-center gap-8">
-              <a href="#about" className="text-sm font-medium hover:text-primary transition-colors">About</a>
-              <a href="#services" className="text-sm font-medium hover:text-primary transition-colors">Workshops</a>
-              <a href="#faq" className="text-sm font-medium hover:text-primary transition-colors">FAQ</a>
+              <a href="#about" className="text-sm font-medium hover:text-primary transition-colors cursor-pointer">About</a>
+              <a href="#services" className="text-sm font-medium hover:text-primary transition-colors cursor-pointer">Workshops</a>
+              <a href="#faq" className="text-sm font-medium hover:text-primary transition-colors cursor-pointer">FAQ</a>
               <Dialog open={isContactOpen} onOpenChange={setIsContactOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="default" className="bg-accent hover:bg-accent/90 text-accent-foreground">
+                  <Button variant="default" className="bg-accent hover:bg-accent/90 text-accent-foreground cursor-pointer">
                     Get in Touch
                   </Button>
                 </DialogTrigger>
@@ -217,7 +237,7 @@ function App() {
                         <SelectTrigger id="workshop">
                           <SelectValue placeholder="Select a workshop" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="max-w-[450px]">
                           {workshops.map((workshop) => (
                             <SelectItem key={workshop.id} value={workshop.title}>
                               {workshop.title}
@@ -237,17 +257,59 @@ function App() {
                         rows={4}
                       />
                     </div>
-                    <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
+                    <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground cursor-pointer">
                       Send Message
                     </Button>
                   </form>
                 </DialogContent>
               </Dialog>
             </div>
+            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden cursor-pointer">
+                  <List size={24} />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                <nav className="flex flex-col gap-6 mt-8 px-2">
+                  <a 
+                    href="#about" 
+                    className="text-lg font-medium hover:text-primary transition-colors cursor-pointer px-2"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    About
+                  </a>
+                  <a 
+                    href="#services" 
+                    className="text-lg font-medium hover:text-primary transition-colors cursor-pointer px-2"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Workshops
+                  </a>
+                  <a 
+                    href="#faq" 
+                    className="text-lg font-medium hover:text-primary transition-colors cursor-pointer px-2"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    FAQ
+                  </a>
+                  <Button 
+                    className="bg-accent hover:bg-accent/90 text-accent-foreground cursor-pointer mt-2"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false)
+                      setIsContactOpen(true)
+                    }}
+                  >
+                    <Envelope size={20} className="mr-2" />
+                    Get in Touch
+                  </Button>
+                </nav>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </nav>
-      <section className="relative py-20 md:py-32 overflow-hidden">
+      <section className="relative py-6 md:py-20 lg:py-32 overflow-hidden">
         <div className="absolute inset-0 opacity-30">
           <div className="absolute inset-0" style={{
             backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, oklch(0.55 0.08 180 / 0.03) 35px, oklch(0.55 0.08 180 / 0.03) 70px)`
@@ -260,16 +322,16 @@ function App() {
             transition={{ duration: 0.6 }}
             className="max-w-3xl"
           >
-            <Badge className="mb-6 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">
+            <Badge className="mb-4 md:mb-6 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">
               <Certificate size={16} className="mr-1" />
               Washington State-Approved Trainer
             </Badge>
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight" style={{ letterSpacing: '-0.02em' }}>Empowering Early Childhood Educators Through Meaningful Professional Development</h1>
-            <p className="text-xl text-muted-foreground mb-8 leading-relaxed">Thoughtfully designed team workshops that bridge theory and practice, offering practical tools and STARS hours for Washington State educators working together.</p>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight" style={{ letterSpacing: '-0.02em' }}>Empowering Early Childhood Educators Through Meaningful Professional Development</h1>
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed">Thoughtfully designed team workshops that bridge theory and practice, offering practical tools and STARS hours for Washington State educators working together.</p>
             <div className="flex flex-wrap gap-4">
               <Button
                 size="lg"
-                className="bg-accent hover:bg-accent/90 text-accent-foreground px-8"
+                className="bg-accent hover:bg-accent/90 text-accent-foreground px-8 cursor-pointer"
                 onClick={() => setIsContactOpen(true)}
               >
                 <Envelope size={20} className="mr-2" />
@@ -278,7 +340,7 @@ function App() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-primary text-primary hover:bg-primary/10"
+                className="border-primary text-primary hover:bg-primary/10 cursor-pointer"
                 onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 Explore Workshops
@@ -287,7 +349,7 @@ function App() {
           </motion.div>
         </div>
       </section>
-      <section id="about" className="py-20 bg-card">
+      <section id="about" className="py-12 md:py-20 bg-card">
         <div className="max-w-6xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -295,7 +357,7 @@ function App() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-12 text-center">About Me</h2>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-12 text-center">About Me</h2>
             
             <div className="flex flex-col md:flex-row gap-8 mb-12 items-center">
               <div className="md:w-1/3 flex-shrink-0">
@@ -305,7 +367,7 @@ function App() {
                   className="rounded-2xl shadow-lg w-full object-cover aspect-square"
                 />
               </div>
-              <div className="md:w-2/3 space-y-6 text-lg leading-relaxed">
+              <div className="md:w-2/3 space-y-6 text-base sm:text-lg leading-relaxed">
                 <p>
                   I believe that <strong>education empowers individuals and opens doors</strong>. My approach to professional development is grounded in authenticity, practical application, and meaningful reflection. I value creating learning environments where educators can share their experiences, think critically about their practice, and grow.
                 </p>
@@ -356,7 +418,7 @@ function App() {
         </div>
       </section>
       <Separator />
-      <section id="services" className="py-20">
+      <section id="services" className="py-12 md:py-20">
         <div className="max-w-6xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -365,8 +427,8 @@ function App() {
             transition={{ duration: 0.6 }}
           >
             <div className="text-center mb-12">
-              <h2 className="text-4xl md:text-5xl font-bold mb-4">Professional Development Workshops for Teams</h2>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">Professional Development Workshops for Teams</h2>
+              <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
                 2–3 Hour Team Sessions | STARS Hours Eligible | Designed for Whole Programs
               </p>
             </div>
@@ -389,16 +451,16 @@ function App() {
                       onOpenChange={() => setExpandedWorkshop(isExpanded ? null : workshop.id)}
                     >
                       <Card className="border-2 hover:border-primary/50 hover:shadow-lg transition-all">
-                        <CollapsibleTrigger className="w-full text-left">
+                        <CollapsibleTrigger className="w-full text-left cursor-pointer">
                           <CardHeader>
                             <div className="flex items-start gap-4">
                               <div className="p-3 rounded-xl bg-primary/10 text-primary shrink-0">
                                 <Icon size={32} weight="fill" />
                               </div>
-                              <div className="flex-1">
-                                <div className="flex items-start justify-between gap-4">
-                                  <CardTitle className="text-2xl mb-2">{workshop.title}</CardTitle>
-                                  <Badge variant="secondary" className="shrink-0">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                                  <CardTitle className="text-lg sm:text-xl md:text-2xl mb-2 pr-2">{workshop.title}</CardTitle>
+                                  <Badge variant="secondary" className="shrink-0 self-start w-fit">
                                     <Certificate size={16} className="mr-1" />
                                     STARS Hours
                                   </Badge>
@@ -468,7 +530,7 @@ function App() {
                             )}
                             <div className="flex justify-center pt-4">
                               <Button
-                                className="bg-accent hover:bg-accent/90 text-accent-foreground"
+                                className="bg-accent hover:bg-accent/90 text-accent-foreground cursor-pointer"
                                 onClick={() => {
                                   setFormData({ ...formData, workshop: workshop.title })
                                   setIsContactOpen(true)
@@ -489,12 +551,12 @@ function App() {
             <Card className="bg-secondary/20 border-secondary">
               <CardContent className="py-8">
                 <div className="text-center max-w-2xl mx-auto">
-                  <h3 className="text-2xl font-bold mb-4">Custom Training Solutions for Your Team</h3>
-                  <p className="text-muted-foreground mb-6">
+                  <h3 className="text-xl sm:text-2xl font-bold mb-4">Custom Training Solutions for Your Team</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground mb-6">
                     Every team has unique needs. I work closely with your entire staff to design workshops that address your program's specific challenges and goals, fostering shared understanding and collaborative growth.
                   </p>
                   <Button
-                    className="bg-accent hover:bg-accent/90 text-accent-foreground"
+                    className="bg-accent hover:bg-accent/90 text-accent-foreground cursor-pointer"
                     onClick={() => {
                       setFormData({ ...formData, workshop: 'custom' })
                       setIsContactOpen(true)
@@ -508,7 +570,7 @@ function App() {
           </motion.div>
         </div>
       </section>
-      <section id="faq" className="py-20 bg-card">
+      <section id="faq" className="py-12 md:py-20 bg-card">
         <div className="max-w-4xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -517,13 +579,13 @@ function App() {
             transition={{ duration: 0.6 }}
           >
             <div className="text-center mb-12">
-              <h2 className="text-4xl md:text-5xl font-bold mb-4">Frequently Asked Questions</h2>
-              <p className="text-xl text-muted-foreground">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">Frequently Asked Questions</h2>
+              <p className="text-base sm:text-lg md:text-xl text-muted-foreground">
                 Everything you need to know about workshops and STARS hours
               </p>
             </div>
 
-            <Accordion type="single" collapsible className="space-y-4">
+            <Accordion type="single" collapsible className="space-y-2 sm:space-y-4">
               {faqs.map((faq, index) => (
                 <motion.div
                   key={index}
@@ -534,14 +596,18 @@ function App() {
                 >
                   <AccordionItem
                     value={`item-${index}`}
-                    className="border-2 rounded-lg px-6 bg-background hover:border-primary/50 transition-colors"
+                    className="border-0"
                   >
-                    <AccordionTrigger className="text-left hover:no-underline py-5">
-                      <span className="text-lg font-semibold pr-4">{faq.question}</span>
-                    </AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground pb-5 text-base leading-relaxed">
-                      {faq.answer}
-                    </AccordionContent>
+                    <Card className="border-2 hover:border-primary/50 transition-all hover:shadow-md">
+                      <AccordionTrigger className="text-left hover:no-underline px-4 sm:px-6 py-3 sm:py-5 [&[data-state=open]]:pb-0 cursor-pointer">
+                        <span className="text-base sm:text-lg font-semibold pr-4">{faq.question}</span>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-4 sm:px-6 pb-3 sm:pb-5 pt-2">
+                        <div className="text-muted-foreground text-base leading-relaxed">
+                          {faq.answer}
+                        </div>
+                      </AccordionContent>
+                    </Card>
                   </AccordionItem>
                 </motion.div>
               ))}
@@ -553,7 +619,7 @@ function App() {
               </p>
               <Button
                 size="lg"
-                className="bg-accent hover:bg-accent/90 text-accent-foreground"
+                className="bg-accent hover:bg-accent/90 text-accent-foreground cursor-pointer"
                 onClick={() => setIsContactOpen(true)}
               >
                 <Envelope size={20} className="mr-2" />
