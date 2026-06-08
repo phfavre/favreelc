@@ -150,7 +150,7 @@ function App() {
     message: ''
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     const emailSubject = formData.workshop 
@@ -166,13 +166,35 @@ Message:
 ${formData.message || 'No additional message provided'}
 `
     
-    const mailtoLink = `mailto:beatrice@favreelc.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`
-    
-    window.location.href = mailtoLink
-    
-    toast.success('Opening your email client... Please send the message to complete your inquiry.')
-    setIsContactOpen(false)
-    setFormData({ name: '', email: '', organization: '', workshop: '', message: '' })
+    try {
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          access_key: 'aa68c890-d6d4-438b-b9b6-46434efecaf1',
+          subject: emailSubject,
+          from_name: formData.name,
+          email: formData.email,
+          message: emailBody,
+          to: 'beatrice@favreelc.com'
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        toast.success('Message sent successfully! I\'ll get back to you soon.')
+        setIsContactOpen(false)
+        setFormData({ name: '', email: '', organization: '', workshop: '', message: '' })
+      } else {
+        toast.error('Failed to send message. Please try again or email directly at beatrice@favreelc.com')
+      }
+    } catch (error) {
+      console.error('Error sending email:', error)
+      toast.error('Failed to send message. Please try again or email directly at beatrice@favreelc.com')
+    }
   }
 
   return (
